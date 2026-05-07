@@ -27,7 +27,6 @@ public final class HeaderAndCookieHttpSessionIdResolver implements HttpSessionId
         } else {
             sessionIds = Collections.singletonList(headerValue);
         }
-
         return sessionIds;
     }
 

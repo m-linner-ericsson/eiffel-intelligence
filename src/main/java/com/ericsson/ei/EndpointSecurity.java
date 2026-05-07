@@ -33,6 +33,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
 import com.ericsson.ei.encryption.EncryptionUtils;
 import com.ericsson.ei.encryption.Encryptor;
@@ -74,8 +75,11 @@ public class EndpointSecurity {
                     .requestMatchers(HttpMethod.DELETE, "/subscriptions/*").authenticated()
                     .anyRequest().permitAll()
                 )
+                .securityContext(context -> context
+                    .securityContextRepository(new HttpSessionSecurityContextRepository())
+                )
                 .sessionManagement(session -> session
-                    .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                    .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                 )
                 .logout(logout -> logout
                     .logoutUrl("/authentication/logout")
@@ -84,6 +88,8 @@ public class EndpointSecurity {
                     .invalidateHttpSession(true)
                 )
                 .httpBasic(basic -> {})
+                .addFilterAfter(new com.ericsson.ei.config.EagerSessionFilter(),
+                    org.springframework.security.web.authentication.www.BasicAuthenticationFilter.class)
                 .csrf(csrf -> csrf.disable());
         } else {
             LOGGER.info("LDAP security configuration is disabled");
